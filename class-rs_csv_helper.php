@@ -7,19 +7,6 @@
  */
 class RS_CSV_Helper {
 
-	// File utility functions
-	public function fopen($filename, $mode='r') {
-		return fopen($filename, $mode);
-	}
-
-	public function fgetcsv($handle, $length = 0, $delimiter = ",") {
-		return fgetcsv($handle, $length, $delimiter);
-	}
-
-	public function fclose($fp) {
-		return fclose($fp);
- 	}
-
 	public function parse_columns(&$obj, $array) {
 		if (!is_array($array) || count($array) == 0)
 			return false;

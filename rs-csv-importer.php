@@ -160,7 +160,7 @@ class RS_CSV_Importer extends WP_Importer {
 	function process_posts() {
 		$h = new RS_CSV_Helper;
 
-		$handle = $h->fopen($this->file, 'r');
+		$handle = fopen($this->file, 'r');
 		if ( $handle == false ) {
 			echo '<p><strong>'.__( 'Failed to open file.', 'really-simple-csv-importer' ).'</strong></p>';
 			wp_import_cleanup($this->id);
@@ -183,7 +183,7 @@ class RS_CSV_Importer extends WP_Importer {
 		
 		echo '<ol>';
 		
-		while (($data = $h->fgetcsv($handle, 0, $delimiter)) !== FALSE) {
+		while (($data = fgetcsv($handle, 0, $delimiter)) !== FALSE) {
 			
 				echo '<li>';
 				
@@ -459,7 +459,7 @@ class RS_CSV_Importer extends WP_Importer {
 		
 		echo '</ol>';
 
-		$h->fclose($handle);
+		fclose($handle);
 		
 		wp_import_cleanup($this->id);
 		
