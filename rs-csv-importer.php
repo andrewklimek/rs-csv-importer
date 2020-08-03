@@ -7,7 +7,7 @@ Author: Takuro Hishikawa
 Author URI: https://en.digitalcube.jp/
 Text Domain: really-simple-csv-importer
 License: GPL version 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
-Version: 1.3
+Version: 1.4
 */
 
 if ( !defined('WP_LOAD_IMPORTERS') )
@@ -438,7 +438,7 @@ class RS_CSV_Importer extends WP_Importer {
 							do_action( 'really_simple_csv_importer_post_saved', $post_object );
 						}
 						
-						echo esc_html(sprintf(__('Processing "%s" done.', 'really-simple-csv-importer'), $post_title));
+						echo esc_html(sprintf(__('Processing "%s" done.', 'really-simple-csv-importer'), $post['post_title']));
 					}
 				}
 				
@@ -447,8 +447,6 @@ class RS_CSV_Importer extends WP_Importer {
 					echo esc_html($message).'<br>';
 				}
 				
-				echo '</li>';
-
 				wp_cache_flush();
 			}
 		}
