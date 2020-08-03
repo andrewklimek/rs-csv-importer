@@ -1,6 +1,7 @@
 (function($){
-    var form = $('#really-simple-csv-importer-form-options');
-    if ( form.length ) {
-        form.prependTo('#import-upload-form').show();
+    var options = document.getElementById('really-simple-csv-importer-form-options');    
+    if ( options ) {
+        document.getElementById('import-upload-form').insertAdjacentElement('afterbegin',options);
+        options.style.display="";
     }
-})(jQuery);
+})();
