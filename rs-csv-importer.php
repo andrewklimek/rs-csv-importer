@@ -7,7 +7,7 @@ Author: Takuro Hishikawa
 Author URI: https://en.digitalcube.jp/
 Text Domain: really-simple-csv-importer
 License: GPL version 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
-Version: 1.4
+Version: 1.5
 */
 
 if ( !defined('WP_LOAD_IMPORTERS') )
@@ -44,7 +44,7 @@ class RS_CSV_Importer extends WP_Importer {
  	// User interface wrapper start
 	function header() {
 		echo '<div class="wrap">';
-		echo '<h2>'.__('Import CSV', 'really-simple-csv-importer').'</h2>';
+		echo '<h2>'.__('Import CSV / TSV', 'really-simple-csv-importer').'</h2>';
 	}
 
 	// User interface wrapper end
@@ -54,13 +54,12 @@ class RS_CSV_Importer extends WP_Importer {
 	
 	// Step 1
 	function greet() {
-		echo '<p>'.__( 'Choose a CSV (.csv) file to upload, then click Upload file and import.', 'really-simple-csv-importer' ).'</p>';
+		echo '<p>'.__( 'Choose a CSV or TSV file to upload, then click Upload file and import.', 'really-simple-csv-importer' ).'</p>';
 		echo '<p>'.__( 'Excel-style CSV file is unconventional and not recommended. LibreOffice has enough export options and recommended for most users.', 'really-simple-csv-importer' ).'</p>';
 		echo '<p>'.__( 'Requirements:', 'really-simple-csv-importer' ).'</p>';
 		echo '<ol>';
 		echo '<li>'.__( 'Select UTF-8 as charset.', 'really-simple-csv-importer' ).'</li>';
-		echo '<li>'.sprintf( __( 'You must use field delimiter as "%s"', 'really-simple-csv-importer'), RS_CSV_Helper::DELIMITER ).'</li>';
-		echo '<li>'.__( 'You must quote all text cells.', 'really-simple-csv-importer' ).'</li>';
+		echo '<li>'.__( 'You must quote all text cells in CSVs.', 'really-simple-csv-importer' ).'</li>';
 		echo '</ol>';
 		echo '<p>'.__( 'Download example CSV files:', 'really-simple-csv-importer' );
 		echo ' <a href="'.plugin_dir_url( __FILE__ ).'sample/sample.csv">'.__( 'csv', 'really-simple-csv-importer' ).'</a>,';
@@ -168,16 +167,24 @@ class RS_CSV_Importer extends WP_Importer {
 			return false;
 		}
 		
-		$is_first = true;
+		// get first row and test for tabs vs. commas
+		$first_row = fgets($handle);
+		$tsv = explode( "\t", $first_row );
+		$csv = explode( ",", $first_row );
+		if ( count( $tsv ) > count( $csv ) ) {
+			$delimiter = "\t";
+			$h->parse_columns( $this, $tsv );
+		} else {
+			$delimiter = ",";
+			$h->parse_columns( $this, $csv );
+		}
+
 		$post_statuses = get_post_stati();
 		
 		echo '<ol>';
 		
-		while (($data = $h->fgetcsv($handle)) !== FALSE) {
-			if ($is_first) {
-				$h->parse_columns( $this, $data );
-				$is_first = false;
-			} else {
+		while (($data = $h->fgetcsv($handle, 0, $delimiter)) !== FALSE) {
+			
 				echo '<li>';
 				
 				$post = array();
@@ -209,7 +216,7 @@ class RS_CSV_Importer extends WP_Importer {
 							$post['ID'] = $post_id;
 							$is_update = true;
 						} else {
-							$error->add( 'post_type_check', sprintf(__('The post type value from your csv file does not match the existing data in your database. post_id: %d, post_type(csv): %s, post_type(db): %s', 'really-simple-csv-importer'), $post_id, $post_type, $post_exist->post_type) );
+							$error->add( 'post_type_check', sprintf(__('The post type value from your file does not match the existing data in your database. post_id: %d, post_type in file: %s, post_type in database: %s', 'really-simple-csv-importer'), $post_id, $post_type, $post_exist->post_type) );
 						}
 					}
 				}
@@ -449,7 +456,6 @@ class RS_CSV_Importer extends WP_Importer {
 				
 				wp_cache_flush();
 			}
-		}
 		
 		echo '</ol>';
 
@@ -492,7 +498,7 @@ function really_simple_csv_importer() {
 	load_plugin_textdomain( 'really-simple-csv-importer', false, dirname( plugin_basename(__FILE__) ) . '/languages' );
 	
     $rs_csv_importer = new RS_CSV_Importer();
-    register_importer('csv', __('CSV', 'really-simple-csv-importer'), __('Import posts, categories, tags, custom fields from simple csv file.', 'really-simple-csv-importer'), array ($rs_csv_importer, 'dispatch'));
+    register_importer('csv', __('CSV / TSV', 'really-simple-csv-importer'), __('Import posts, categories, tags, custom fields from simple csv or tsv file.', 'really-simple-csv-importer'), array ($rs_csv_importer, 'dispatch'));
 }
 add_action( 'plugins_loaded', 'really_simple_csv_importer' );
 
