@@ -67,7 +67,7 @@ class RS_CSV_Importer extends WP_Importer {
 		echo ' '.__('(OpenDocument Spreadsheet file format for LibreOffice. Please export as csv before import)', 'really-simple-csv-importer' );
 		echo '</p>';
 		?>
-		<div id="really-simple-csv-importer-form-options" style="display: none;">
+		<div id="rs-csv-importer-form-options">
 			<h2><?php _e( 'Import Options', 'really-simple-csv-importer' ); ?></h2>
 			<p><?php _e( 'Replace by post title', 'really-simple-csv-importer' ); ?></p>
 			<label>
@@ -79,6 +79,8 @@ class RS_CSV_Importer extends WP_Importer {
 		</div>
 		<?php
 		wp_import_upload_form( add_query_arg('step', 1) );
+		// puts the above custom option into the <form> created by wp_import_upload_form
+		echo "<script>document.getElementById('import-upload-form').insertAdjacentElement('afterbegin',document.getElementById('rs-csv-importer-form-options'));</script>";
 	}
 
 	// Step 2
@@ -513,14 +515,5 @@ function really_simple_csv_importer() {
     register_importer('csv', __('CSV / TSV', 'really-simple-csv-importer'), __('Import posts, categories, tags, custom fields from simple csv or tsv file.', 'really-simple-csv-importer'), array ($rs_csv_importer, 'dispatch'));
 }
 add_action( 'plugins_loaded', 'really_simple_csv_importer' );
-
-function really_simple_csv_importer_enqueue($hook) {
-	if ( 'admin.php' != $hook ) {
-		return;
-	}
-
-	wp_enqueue_script( 'really_simple_csv_importer_admin_script', plugin_dir_url( __FILE__ ) . 'auto.js', array(), false, true );
-}
-add_action( 'admin_enqueue_scripts', 'really_simple_csv_importer_enqueue' );
 
 endif; // class_exists( 'WP_Importer' )
