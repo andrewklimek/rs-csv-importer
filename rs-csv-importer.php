@@ -168,7 +168,7 @@ class RS_CSV_Importer extends WP_Importer {
 		}
 		
 		// get first row and test for tabs vs. commas
-		$first_row = fgets($handle);
+		$first_row = trim(fgets($handle));
 		$tsv = explode( "\t", $first_row );
 		$csv = explode( ",", $first_row );
 		if ( count( $tsv ) > count( $csv ) ) {
@@ -184,7 +184,7 @@ class RS_CSV_Importer extends WP_Importer {
 		echo '<ol>';
 		
 		while (($data = fgetcsv($handle, 0, $delimiter)) !== FALSE) {
-		
+
 			echo '<li>';
 			
 			$post = array();
