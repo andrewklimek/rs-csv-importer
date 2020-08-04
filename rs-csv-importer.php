@@ -76,6 +76,10 @@ class RS_CSV_Importer extends WP_Importer {
 			<label>
 				<input type="radio" name="replace-by-title" value="1" /><?php _e( 'Enable', 'really-simple-csv-importer' ); ?>
 			</label>
+			<p>
+			<label>
+				<input type=checkbox name=default-to-published><?php _e( 'Default to Published (if post_status is empty)', 'really-simple-csv-importer' ); ?>
+			</label>
 		</div>
 		<?php
 		wp_import_upload_form( add_query_arg('step', 1) );
@@ -180,8 +184,6 @@ class RS_CSV_Importer extends WP_Importer {
 			$delimiter = ",";
 			$h->parse_columns( $this, $csv );
 		}
-
-		$post_statuses = get_post_stati();
 		
 		echo '<ol>';
 		
@@ -298,9 +300,11 @@ class RS_CSV_Importer extends WP_Importer {
 			// (string) post status
 			$post_status = $h->get_data($this,$data,'post_status');
 			if ($post_status) {
-				if (in_array($post_status, $post_statuses)) {
+				if ( in_array( $post_status, get_post_stati() ) ) {
 					$post['post_status'] = $post_status;
 				}
+			} elseif ( !empty( $_POST['default-to-published'] ) ) {
+				$post['post_status'] = "publish";
 			}
 			
 			// (string) post password
