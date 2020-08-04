@@ -153,6 +153,7 @@ class RSCSV_Import_Post_Helper
     {
         $scf_array = array();
         foreach ($data as $key => $value) {
+            if ( "" === $value ) continue;// skip blank meta. this could be an option.
             $is_cfs = 0;
             $is_scf = 0;
             $is_acf = 0;
