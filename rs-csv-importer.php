@@ -7,7 +7,7 @@ Author: Takuro Hishikawa
 Author URI: https://en.digitalcube.jp/
 Text Domain: really-simple-csv-importer
 License: GPL version 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
-Version: 1.5
+Version: 1.5.1
 */
 
 if ( !defined('WP_LOAD_IMPORTERS') )
@@ -193,6 +193,18 @@ class RS_CSV_Importer extends WP_Importer {
 			
 			// (string) (required) post type
 			$post_type = $h->get_data($this,$data,'post_type');
+			/**
+			 * Filter post type.
+			 * If you return "continue" you can skip to the next line, useful for adding some 
+			 * lines to a custom table or something, using the post_type column as a flag.
+			 *
+			 * @since 1.5.1
+			 *
+			 * @param string $post_type (required)
+			 * @param array $data
+			 */
+			$post_type = apply_filters( 'really_simple_csv_importer_post_type', $post_type, $data );
+			if ( "continue" === $post_type ) continue;
 			if ($post_type) {
 				if (post_type_exists($post_type)) {
 					$post['post_type'] = $post_type;
