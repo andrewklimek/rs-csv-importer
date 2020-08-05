@@ -177,10 +177,21 @@ class RS_CSV_Importer extends WP_Importer {
 			rewind($handle);
 		}
 
-		// get header column
-		$first_row = fgetcsv($handle, 0, $delimiter);
-		// could test for header names here and use a default if there's no header rows
-		$h->parse_columns( $this, $first_row );
+		// get header row
+		$header_row = fgetcsv($handle, 0, $delimiter);
+		$saved_options = get_option( 'rs_csv_import_options', array() );
+		if ( false === strpos( implode(" ",$header_row), "post_" ) ||  false === strpos( implode(" ",$header_row), "tax_" ) ) {
+			// doesn't look like we have a header row, try to get last one from db
+			if ( $saved_options && !empty( $saved_options['header'] ) ) {
+				$header_row = $saved_options['header'];
+				rewind($handle);
+			}
+		} else {
+			// have header row, save to db
+			$saved_options['header'] = $header_row;
+			update_option( 'rs_csv_import_options', $saved_options, false );
+		}
+		$h->parse_columns( $this, $header_row );
 		
 		echo '<ol>';
 		
