@@ -71,6 +71,7 @@ class RS_CSV_Importer extends WP_Importer {
 			<h2><?php _e( 'Import Options', 'really-simple-csv-importer' ); ?></h2>
 			<p><label><input type=checkbox name=replace-by-title><?php _e( 'Replace by post title', 'really-simple-csv-importer' ); ?></label>
 			<p><label><input type=checkbox name=default-to-published><?php _e( 'Default to Published (if post_status is empty)', 'really-simple-csv-importer' ); ?></label>
+			<p><label><input type=checkbox name=dry-run><?php _e( 'Dry run', 'really-simple-csv-importer' ); ?></label>
 		</div>
 		<?php
 		wp_import_upload_form( add_query_arg('step', 1) );
@@ -417,9 +418,9 @@ class RS_CSV_Importer extends WP_Importer {
 			 *
 			 * @param bool false
 			 */
-			$dry_run = apply_filters( 'really_simple_csv_importer_dry_run', false );
+			$dry_run = apply_filters( 'really_simple_csv_importer_dry_run', !empty( $_POST['dry-run'] ) );
 			
-			if (!$error->get_error_codes() && $dry_run == false) {
+			if ( ! $error->get_error_codes() && ! $dry_run ) {
 				
 				/**
 				 * Get Alternative Importer Class name.
