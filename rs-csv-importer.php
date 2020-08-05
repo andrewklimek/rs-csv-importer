@@ -66,12 +66,14 @@ class RS_CSV_Importer extends WP_Importer {
 		echo ' <a href="'.plugin_dir_url( __FILE__ ).'sample/sample.ods">'.__( 'ods', 'really-simple-csv-importer' ).'</a>';
 		echo ' '.__('(OpenDocument Spreadsheet file format for LibreOffice. Please export as csv before import)', 'really-simple-csv-importer' );
 		echo '</p>';
+
+		$saved_options = get_option( 'rs_csv_import_options', array() );
 		?>
 		<div id=rs-csv-importer-form-options>
 			<h2><?php _e( 'Import Options', 'really-simple-csv-importer' ); ?></h2>
-			<p><label><input type=checkbox name=replace-by-title><?php _e( 'Replace by post title', 'really-simple-csv-importer' ); ?></label>
-			<p><label><input type=checkbox name=default-to-published><?php _e( 'Default to Published (if post_status is empty)', 'really-simple-csv-importer' ); ?></label>
-			<p><label><input type=checkbox name=dry-run><?php _e( 'Dry run', 'really-simple-csv-importer' ); ?></label>
+			<p><label><input type=checkbox name=options[titlereplace] <?php if(!empty($saved_options['titlereplace'])) echo "checked"; ?>><?php _e( 'Replace by post title', 'really-simple-csv-importer' ); ?></label>
+			<p><label><input type=checkbox name=options[publish] <?php if(!empty($saved_options['publish'])) echo "checked"; ?>><?php _e( 'Default to Published (if post_status is empty)', 'really-simple-csv-importer' ); ?></label>
+			<p><label><input type=checkbox name=options[dry] <?php if(!empty($saved_options['dry'])) echo "checked"; ?>><?php _e( 'Dry run', 'really-simple-csv-importer' ); ?></label>
 		</div>
 		<?php
 		wp_import_upload_form( add_query_arg('step', 1) );
@@ -81,6 +83,13 @@ class RS_CSV_Importer extends WP_Importer {
 
 	// Step 2
 	function import() {
+
+		if ( !empty( $_POST['options'] ) ) {
+			update_option( 'rs_csv_import_options', $_POST['options'], false );
+		} else {
+			delete_option( 'rs_csv_import_options');
+		}
+
 		$file = wp_import_handle_upload();
 
 		if ( isset( $file['error'] ) ) {
@@ -179,17 +188,15 @@ class RS_CSV_Importer extends WP_Importer {
 
 		// get header row
 		$header_row = fgetcsv($handle, 0, $delimiter);
-		$saved_options = get_option( 'rs_csv_import_options', array() );
 		if ( false === strpos( implode(" ",$header_row), "post_" ) ||  false === strpos( implode(" ",$header_row), "tax_" ) ) {
 			// doesn't look like we have a header row, try to get last one from db
-			if ( $saved_options && !empty( $saved_options['header'] ) ) {
-				$header_row = $saved_options['header'];
+			if ( $saved_header = get_option( 'rs_csv_import_last_header' ) ) {
+				$header_row = $saved_header;
 				rewind($handle);
 			}
 		} else {
 			// have header row, save to db
-			$saved_options['header'] = $header_row;
-			update_option( 'rs_csv_import_options', $saved_options, false );
+			update_option( 'rs_csv_import_last_header', $header_row, false );
 		}
 		$h->parse_columns( $this, $header_row );
 		
@@ -249,7 +256,7 @@ class RS_CSV_Importer extends WP_Importer {
 			$post_title = $h->get_data($this,$data,'post_title');
 			if ($post_title) {
 
-				if ( ! $is_update && ! empty( $_POST['replace-by-title'] ) ) {
+				if ( ! $is_update && ! empty( $_POST['options']['titlereplace'] ) ) {
 					//try to update a post with the same title
 					if ( ! $post_type ) {
 						$post_type = 'post';
@@ -311,7 +318,7 @@ class RS_CSV_Importer extends WP_Importer {
 				if ( in_array( $post_status, get_post_stati() ) ) {
 					$post['post_status'] = $post_status;
 				}
-			} elseif ( !empty( $_POST['default-to-published'] ) ) {
+			} elseif ( !empty( $_POST['options']['publish'] ) ) {
 				$post['post_status'] = "publish";
 			}
 			
@@ -434,7 +441,7 @@ class RS_CSV_Importer extends WP_Importer {
 			 *
 			 * @param bool false
 			 */
-			$dry_run = apply_filters( 'really_simple_csv_importer_dry_run', !empty( $_POST['dry-run'] ) );
+			$dry_run = apply_filters( 'really_simple_csv_importer_dry_run', !empty( $_POST['options']['dry'] ) );
 			
 			if ( ! $error->get_error_codes() && ! $dry_run ) {
 				
