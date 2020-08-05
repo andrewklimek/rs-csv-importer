@@ -327,10 +327,14 @@ class RSCSV_Import_Post_Helper
     {
         $post = $this->getPost();
         if ($post instanceof WP_Post) {
-            if (parse_url($file, PHP_URL_SCHEME)) {
-                $file = $this->remoteGet($file, null, $post);
+            if ( is_numeric($file) ) {
+                $thumbnail_id = $file;
+            } else {
+                if (parse_url($file, PHP_URL_SCHEME)) {
+                    $file = $this->remoteGet($file, null, $post);
+                }
+                $thumbnail_id = $this->setAttachment($file);
             }
-            $thumbnail_id = $this->setAttachment($file);
             if ($thumbnail_id) {
                 $meta_id = set_post_thumbnail($post, $thumbnail_id);
                 if ($meta_id) {
