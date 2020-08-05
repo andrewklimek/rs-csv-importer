@@ -67,19 +67,10 @@ class RS_CSV_Importer extends WP_Importer {
 		echo ' '.__('(OpenDocument Spreadsheet file format for LibreOffice. Please export as csv before import)', 'really-simple-csv-importer' );
 		echo '</p>';
 		?>
-		<div id="rs-csv-importer-form-options">
+		<div id=rs-csv-importer-form-options>
 			<h2><?php _e( 'Import Options', 'really-simple-csv-importer' ); ?></h2>
-			<p><?php _e( 'Replace by post title', 'really-simple-csv-importer' ); ?></p>
-			<label>
-				<input type="radio" name="replace-by-title" value="0" checked="checked" /><?php _e( 'Disable', 'really-simple-csv-importer' ); ?>
-			</label>
-			<label>
-				<input type="radio" name="replace-by-title" value="1" /><?php _e( 'Enable', 'really-simple-csv-importer' ); ?>
-			</label>
-			<p>
-			<label>
-				<input type=checkbox name=default-to-published><?php _e( 'Default to Published (if post_status is empty)', 'really-simple-csv-importer' ); ?>
-			</label>
+			<p><label><input type=checkbox name=replace-by-title><?php _e( 'Replace by post title', 'really-simple-csv-importer' ); ?></label>
+			<p><label><input type=checkbox name=default-to-published><?php _e( 'Default to Published (if post_status is empty)', 'really-simple-csv-importer' ); ?></label>
 		</div>
 		<?php
 		wp_import_upload_form( add_query_arg('step', 1) );
@@ -241,7 +232,7 @@ class RS_CSV_Importer extends WP_Importer {
 			$post_title = $h->get_data($this,$data,'post_title');
 			if ($post_title) {
 
-				if ( ! $is_update && $_POST['replace-by-title'] == 1 ) {
+				if ( ! $is_update && ! empty( $_POST['replace-by-title'] ) ) {
 					//try to update a post with the same title
 					if ( ! $post_type ) {
 						$post_type = 'post';
