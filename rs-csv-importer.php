@@ -7,7 +7,7 @@ Author: Takuro Hishikawa
 Author URI: https://en.digitalcube.jp/
 Text Domain: really-simple-csv-importer
 License: GPL version 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
-Version: 1.5.2
+Version: 1.6
 */
 
 if ( !defined('WP_LOAD_IMPORTERS') )
@@ -191,8 +191,11 @@ class RS_CSV_Importer extends WP_Importer {
 		if ( false === strpos( implode(" ",$header_row), "post_" ) ||  false === strpos( implode(" ",$header_row), "tax_" ) ) {
 			// doesn't look like we have a header row, try to get last one from db
 			if ( $saved_header = get_option( 'rs_csv_import_last_header' ) ) {
-				$header_row = $saved_header;
-				rewind($handle);
+				// make sure last-used header row has the same # of columns as the current file
+				if ( count($saved_header) === count($header_row) ) {
+					$header_row = $saved_header;
+					rewind($handle);
+				}
 			}
 		} else {
 			// have header row, save to db
