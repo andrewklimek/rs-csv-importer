@@ -164,18 +164,23 @@ class RS_CSV_Importer extends WP_Importer {
 			wp_import_cleanup($this->id);
 			return false;
 		}
-		
-		// get first row and test for tabs vs. commas
-		$first_row = trim(fgets($handle));
-		$tsv = explode( "\t", $first_row );
-		$csv = explode( ",", $first_row );
-		if ( count( $tsv ) > count( $csv ) ) {
+
+		// Default to comma delimiter but test for "tsv" in filename or number of tabs in first line if no "csv" in name
+		$delimiter = ",";
+		if ( stripos(  $this->file, '.tsv' ) ) {
 			$delimiter = "\t";
-			$h->parse_columns( $this, $tsv );
-		} else {
-			$delimiter = ",";
-			$h->parse_columns( $this, $csv );
+		} elseif ( false === stripos(  $this->file, '.csv' ) ) {
+			$first_row = fgets($handle);
+			if ( 4 > substr_count( $first_row, "\t" ) ) {
+				$delimiter = "\t";
+			}
+			rewind($handle);
 		}
+
+		// get header column
+		$first_row = fgetcsv($handle, 0, $delimiter);
+		// could test for header names here and use a default if there's no header rows
+		$h->parse_columns( $this, $first_row );
 		
 		echo '<ol>';
 		
