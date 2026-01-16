@@ -72,6 +72,7 @@ class RS_CSV_Importer extends WP_Importer {
 		<div id=rs-csv-importer-form-options>
 			<h2><?php _e( 'Import Options', 'really-simple-csv-importer' ); ?></h2>
 			<p><label><input type=checkbox name=options[titlereplace] <?php if(!empty($saved_options['titlereplace'])) echo "checked"; ?>><?php _e( 'Replace by post title', 'really-simple-csv-importer' ); ?></label>
+			<p><label><input type=checkbox name=options[updatelast] <?php if(!empty($saved_options['updatelast'])) echo "checked"; ?>><?php _e( 'Update last of type', 'really-simple-csv-importer' ); ?></label>
 			<p><label><input type=checkbox name=options[publish] <?php if(!empty($saved_options['publish'])) echo "checked"; ?>><?php _e( 'Default to Published (if post_status is empty)', 'really-simple-csv-importer' ); ?></label>
 			<p><label><input type=checkbox name=options[dry] <?php if(!empty($saved_options['dry'])) echo "checked"; ?>><?php _e( 'Dry run', 'really-simple-csv-importer' ); ?></label>
 		</div>
@@ -240,8 +241,8 @@ class RS_CSV_Importer extends WP_Importer {
 			
 			// (int) post id
 			$post_id = $h->get_data($this,$data,'ID');
-			$post_id = ($post_id) ? $post_id : $h->get_data($this,$data,'post_id');
-			if ($post_id) {
+			if ( ! $post_id ) $post_id = $h->get_data($this,$data,'post_id');
+			if ( $post_id ) {
 				$post_exist = get_post($post_id);
 				if ( is_null( $post_exist ) ) { // if the post id is not exists
 					$post['import_id'] = $post_id;
@@ -254,6 +255,15 @@ class RS_CSV_Importer extends WP_Importer {
 					}
 				}
 			}
+			elseif ( ! empty( $_POST['options']['updatelast'] ) ) {
+				global $wpdb;
+				$post_id = $wpdb->get_var("SELECT ID FROM {$wpdb->prefix}posts WHERE post_type = '{$post_type}' ORDER BY ID DESC LIMIT 1");
+				if ( $post_id ) {
+					$post['ID'] = $post_id;
+					$is_update = true;
+				}
+			}
+
 
 			// (string) post title
 			$post_title = $h->get_data($this,$data,'post_title');
